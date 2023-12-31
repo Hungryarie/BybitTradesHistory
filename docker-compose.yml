@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - ${REDIS_PORT}:6379
+    volumes:
+     - redis:/data
+      # - ./config/redis.conf:/redis.conf
+    # command: [ "redis-server", "/redis.conf" ]
+    command: redis-server --save 20 1 --loglevel warning
+
+  api:
+    build: 
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: api
+    restart: unless-stopped
+    depends_on:
+      - redis
+    volumes:
+      - ./api:/app
+    ports:
+      - ${API_PORT}:80
+      # debug port
+      - 5678:5678
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=${REDIS_PORT}
+    links:
+      - redis
+    #overide entrypoint to skip the debugger
+    entrypoint: [""] 
+    command: uvicorn main:app --host 0.0.0.0 --port 80 --reload
+
+volumes:
+  redis:
+    driver: local

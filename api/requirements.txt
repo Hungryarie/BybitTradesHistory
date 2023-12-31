@@ -1,0 +1,18 @@
+# data analysis libraries
+numpy
+pandas
+
+# broker API libraries
+ccxt
+
+# web frameworks
+fastapi
+
+# servers
+uvicorn
+gunicorn
+
+# networking
+httpx
+websocket-client
+websockets
