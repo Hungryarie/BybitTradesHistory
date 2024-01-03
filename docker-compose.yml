@@ -22,7 +22,7 @@ services:
     depends_on:
       - redis
     volumes:
-      - ./api:/app
+      - ./api/app:/app
     ports:
       - ${API_PORT}:80
       # debug port
