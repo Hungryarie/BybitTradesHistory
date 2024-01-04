@@ -1,8 +1,45 @@
 # BybitTradesHistory
 Fetch bybit trades via websockets for one day in a Redis db
 
-## Running
+## Production
+after debugging rebuild the container with: 
+`docker compose up --build`  
+otherwise just run:
 `docker compose up -d`
+
+## Developing
+(VSCODE specific)  
+`ctrl-shift-p` to open the command palette.  
+type/click `Dev Containers: Rebuild and Reopen in Container`   
+or *without*  rebuild use `Dev Containers: Reopen in Container`
+a new windonw should open inside the container with the the workdir of the FastApi code (volume mount of => api/app/)  
+
+since the Dockerfile.dev has an entrypoint set that waits for the attachment of the debugger, you should attach to it by utilizing the `Python: Remote Attach` launch config. See example below:
+
+```json
+// lauch.json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Remote Attach",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "."
+                }
+            ],
+            "justMyCode": true
+        }
+    ]
+}
+```
 
 
 ## troubleshooting
@@ -35,3 +72,4 @@ using a bit of https://geshan.com.np/blog/2022/01/redis-docker/
 ### TODO 
 setup docker for dev and production:
 - https://www.reddit.com/r/docker/comments/13kxfjf/how_to_handle_dockercompose_for_production_and/
+- https://toptechtips.github.io/2023-05-17-docker-compose-multiple-dev-containers/

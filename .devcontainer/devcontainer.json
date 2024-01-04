@@ -1,0 +1,23 @@
+{
+    "name": "FastAPI Debug",
+    "dockerComposeFile": [
+      "../docker-compose.yml",
+      "./docker-compose.dev.yml"
+     ], 
+    "service": "api", // Name of the FastAPI service in the Docker Compose file
+    "workspaceFolder": "/app",
+    "customizations": {
+        "vscode": {
+            "extensions": ["ms-python.python"],
+            "settings": {
+              "python.pythonPath": "/usr/local/bin/python",
+              "debuggerPath": "/usr/local/bin/debugpy"
+              // "python.envFile": "/workspace/.env"
+            }
+        }
+    },
+    // "forwardPorts": [8000],
+    // "postCreateCommand": "pip install -r requirements.txt",
+    "remoteUser": "vscode"
+    // "runArgs": ["--service-ports"]
+  }
