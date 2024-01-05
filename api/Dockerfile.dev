@@ -4,13 +4,13 @@ FROM python:3.10 AS base
 RUN groupadd -r vscode && useradd -m -r -g vscode vscode
 
 # Set the working directory and user
-WORKDIR /app
+WORKDIR /workspace
 USER vscode
 
-# install popular Python packages
-COPY requirements.txt ../requirements.txt
-COPY requirements-dev.txt ../requirements-dev.txt
-RUN pip3 install -r ../requirements.txt -r ../requirements-dev.txt
+# install Python packages
+COPY requirements.txt ./requirements.txt
+COPY requirements-dev.txt ./requirements-dev.txt
+RUN pip3 install -r ./requirements.txt -r ./requirements-dev.txt
 
 EXPOSE 80
 

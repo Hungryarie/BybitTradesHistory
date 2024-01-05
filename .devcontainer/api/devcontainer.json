@@ -5,19 +5,32 @@
       "./docker-compose.dev.yml"
      ], 
     "service": "api", // Name of the FastAPI service in the Docker Compose file
-    "workspaceFolder": "/app",
+    "workspaceFolder": "/workspace",
     "customizations": {
         "vscode": {
-            "extensions": ["ms-python.python"],
+            "extensions": [
+              "ms-python.python",
+              "charliermarsh.ruff"
+            ],
             "settings": {
-              "python.pythonPath": "/usr/local/bin/python",
-              "debuggerPath": "/usr/local/bin/debugpy"
+              // "python.pythonPath": "/usr/local/bin/python", // doesnt work
+              "python.defaultInterpreterPath": "/usr/local/bin/python",  // https://stackoverflow.com/questions/72305777/vscode-remote-container-default-python-interpreter
+              "debuggerPath": "/usr/local/bin/debugpy",
+              "python.autoComplete.extraPaths": ["./app"],// TODO, remove? without it also works...
+              "python.testing.pytestEnabled": true,
+              "python.testing.pytestPath": "/usr/local/bin/pytest",
+              "python.testing.pytestArgs": ["tests"],
+              "python.testing.unittestEnabled": false,
+              // "python.testing.cwd": "app" //doesnt work, cant find any testfiles
+              // "python.testing.cwd": "tests" //doesnt work
+              // "python.testing.cwd": "." // doesnt work!
+              // "python.testing.cwd": "./app" // doesnt work!
+              // "python.testing.cwd": "" // works!
+              "python.testing.cwd": "/workspace" // works
               // "python.envFile": "/workspace/.env"
             }
         }
     },
-    // "forwardPorts": [8000],
-    // "postCreateCommand": "pip install -r requirements.txt",
+    // "forwardPorts": [8000], // no need, docker compose does this for me
     "remoteUser": "vscode"
-    // "runArgs": ["--service-ports"]
   }
