@@ -43,6 +43,8 @@ since the Dockerfile.dev has an entrypoint set that waits for the attachment of 
 
 for json reference on devcontainers: https://containers.dev/implementors/json_reference/
 
+### devcontainer errors
+try to rebuild the devcontainer(s)!
 
 ## troubleshooting
 
