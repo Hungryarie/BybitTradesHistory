@@ -41,6 +41,8 @@ since the Dockerfile.dev has an entrypoint set that waits for the attachment of 
 }
 ```
 
+for json reference on devcontainers: https://containers.dev/implementors/json_reference/
+
 
 ## troubleshooting
 
@@ -64,9 +66,10 @@ apply config by: `sudo sysctl -p`
 redis should now run without this error!
 
 ## References
-### redis setup
+### Redis setup
 using a bit of https://geshan.com.np/blog/2022/01/redis-docker/
-
+### Depends on, links, networks
+- https://www.baeldung.com/ops/docker-compose-links-depends-on
 
 
 ### TODO 
