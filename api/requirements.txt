@@ -8,6 +8,10 @@ ccxt
 # web frameworks
 fastapi
 
+# db utils
+sqlmodel
+SQLAlchemy
+
 # servers
 uvicorn
 gunicorn
