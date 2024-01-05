@@ -1,7 +1,7 @@
 {
     "name": "FastAPI Debug",
     "dockerComposeFile": [
-      "../docker-compose.yml",
+      "../../docker-compose.yml",
       "./docker-compose.dev.yml"
      ], 
     "service": "api", // Name of the FastAPI service in the Docker Compose file
