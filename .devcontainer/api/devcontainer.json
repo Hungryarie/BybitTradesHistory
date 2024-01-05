@@ -13,21 +13,14 @@
               "charliermarsh.ruff"
             ],
             "settings": {
-              // "python.pythonPath": "/usr/local/bin/python", // doesnt work
               "python.defaultInterpreterPath": "/usr/local/bin/python",  // https://stackoverflow.com/questions/72305777/vscode-remote-container-default-python-interpreter
               "debuggerPath": "/usr/local/bin/debugpy",
-              "python.autoComplete.extraPaths": ["./app"],// TODO, remove? without it also works...
+              "python.autoComplete.extraPaths": ["./app"], // TODO, remove? without it also works...
               "python.testing.pytestEnabled": true,
               "python.testing.pytestPath": "/usr/local/bin/pytest",
               "python.testing.pytestArgs": ["tests"],
               "python.testing.unittestEnabled": false,
-              // "python.testing.cwd": "app" //doesnt work, cant find any testfiles
-              // "python.testing.cwd": "tests" //doesnt work
-              // "python.testing.cwd": "." // doesnt work!
-              // "python.testing.cwd": "./app" // doesnt work!
-              // "python.testing.cwd": "" // works!
-              "python.testing.cwd": "/workspace" // works
-              // "python.envFile": "/workspace/.env"
+              "python.testing.cwd": "/workspace" // "" also works
             }
         }
     },
