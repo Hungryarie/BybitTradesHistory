@@ -4,6 +4,7 @@ pandas
 
 # broker API libraries
 ccxt
+pybit
 
 # web frameworks
 fastapi
@@ -11,6 +12,7 @@ fastapi
 # db utils
 sqlmodel
 SQLAlchemy
+redis
 
 # servers
 uvicorn
