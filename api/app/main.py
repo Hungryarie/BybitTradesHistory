@@ -1,9 +1,7 @@
 import json
 import os
 import redis
-from typing import Union
-
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, Request
 from fastapi.responses import HTMLResponse
 from pybit.unified_trading import HTTP
 
@@ -51,3 +49,63 @@ def get_symbols():
     symbols.append({'symbol':'OPUSDT', 'type':'linear'})
     symbols.append({'symbol':'ARBUSDT', 'type':'linear'})
     return symbols
+
+
+@app.get("/api/connection_info}")
+def get_connectioninfo(request: Request):
+    client_host = request.client.host
+    server = request.base_url.__str__().lstrip("http://").rstrip("/")
+    return {"client_host": client_host, 'server_adress':server}
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    # https://fastapi.tiangolo.com/advanced/websockets/
+    await websocket.accept()
+    while True:
+        data = await websocket.receive_text()
+        await websocket.send_text(f"Message text was: {data}")
+
+
+# use double {{ }} to escape the string formatting =https://stackoverflow.com/questions/5466451/how-do-i-escape-curly-brace-characters-in-a-string-while-using-format-or
+html = """
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Chat</title>
+    </head>
+    <body>
+        <h1>WebSocket Chat</h1>
+        <form action="" onsubmit="sendMessage(event)">
+            <input type="text" id="messageText" autocomplete="off"/>
+            <button>Send</button>
+        </form>
+        <ul id='messages'>
+        </ul>
+        <script>
+            var ws = new WebSocket('ws://{}/ws');
+            ws.onmessage = function(event) {{
+                var messages = document.getElementById('messages')
+                var message = document.createElement('li')
+                var content = document.createTextNode(event.data)
+                message.appendChild(content)
+                messages.appendChild(message)
+            }};
+            function sendMessage(event) {{
+                var input = document.getElementById("messageText")
+                ws.send(input.value)
+                input.value = ''
+                event.preventDefault()
+            }}
+        </script>
+    </body>
+</html>
+"""
+
+
+@app.get("/ws_test")
+async def ws_test(request: Request):
+    con_info = get_connectioninfo(request)
+    return HTMLResponse(html.format(con_info["server_adress"]))
+
+
