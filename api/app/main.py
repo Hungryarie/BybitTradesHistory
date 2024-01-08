@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import os
 import redis
@@ -99,20 +100,28 @@ async def websocket_endpoint3(websocket: WebSocket):
             }
         await websocket_exchange.send(json.dumps(payload))
 
-        # read response of the subscription to the exchange
-        msg = await websocket_exchange.recv()
-
-        # send to 'our' internal websocket clients
-        await websocket.send_text(f"initial message was: {msg}")
-
-        # once connected to the exchanges trade stream, fetch the messages and do something with it
-        while True:
-            # TODO send a ping one every minute or so (https://websockets.readthedocs.io/en/stable/reference/asyncio/client.html#websockets.client.WebSocketClientProtocol.ping)
-            msg_q = websocket_exchange.messages
+        try:
+            # read response of the subscription to the exchange
             msg = await websocket_exchange.recv()
-            obj = json.loads(msg)
-            print(f"queue length: {len(msg_q)}. data length:{len(obj['data'])}")
-            await websocket.send_text(f"Message data was: {obj['data']}")
+
+            # send to 'our' internal websocket clients
+            await websocket.send_text(f"initial message was: {msg}")
+
+            ts_prev = datetime.now().timestamp()
+            # once connected to the exchanges trade stream, fetch the messages and do something with it
+            while True:
+                # send a ping one every minute or so (https://websockets.readthedocs.io/en/stable/reference/asyncio/client.html#websockets.client.WebSocketClientProtocol.ping)
+                ts_now = datetime.now().timestamp()
+                if ts_now - ts_prev >= 60:
+                    await websocket_exchange.ping()
+                    ts_prev = ts_now
+                msg_q = websocket_exchange.messages
+                msg = await websocket_exchange.recv()
+                obj = json.loads(msg)
+                print(f"queue length: {len(msg_q)}. data length:{len(obj['data'])}")
+                await websocket.send_text(f"Message data was: {obj['data']}")
+        except  websockets.exceptions.ConnectionClosedOK as e:
+            print(f"connection closed! {e}")
 
 
 # use double {{ }} to escape the string formatting =https://stackoverflow.com/questions/5466451/how-do-i-escape-curly-brace-characters-in-a-string-while-using-format-or
