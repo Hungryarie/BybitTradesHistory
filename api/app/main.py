@@ -1,7 +1,7 @@
 from datetime import datetime
 import json
 import os
-import redis
+import redis.asyncio as redis
 from fastapi import FastAPI, WebSocket, Request
 from fastapi.responses import HTMLResponse
 from fastapi import Depends
@@ -10,12 +10,12 @@ import websockets
 
 
 # Dependency to create and manage the Redis connection
-def get_redis_conn() -> redis.Redis: 
+async def get_redis_conn() -> redis.Redis: 
     redis_conn = redis.Redis(host=os.environ.get("REDIS_HOST"), port=os.environ.get("REDIS_PORT"))
     try:
         yield redis_conn
     finally:
-        redis_conn.close()
+        await redis_conn.aclose()
 
 
 # Dependency to create and manage the pybit session
@@ -41,9 +41,9 @@ def read_root():
 
 
 @app.get("/api/test_redis")
-def test_redis(redis_db: redis.Redis = Depends(get_redis_conn)):
-    redis_db.set("test", json.dumps({"hoi": "doei"}))
-    output = redis_db.get("test")
+async def test_redis(redis_db: redis.Redis = Depends(get_redis_conn)):
+    await redis_db.set("test", json.dumps({"hoi": "doei"}))
+    output = await redis_db.get("test")
     return output
 
 
