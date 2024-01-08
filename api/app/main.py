@@ -3,17 +3,33 @@ import os
 import redis
 from fastapi import FastAPI, WebSocket, Request
 from fastapi.responses import HTMLResponse
+from fastapi import Depends
 from pybit.unified_trading import HTTP
 import websockets
 
 
-db = redis.Redis(host=os.environ.get("REDIS_HOST"), port=os.environ.get("REDIS_PORT"))
+# Dependency to create and manage the Redis connection
+def get_redis_conn() -> redis.Redis: 
+    redis_conn = redis.Redis(host=os.environ.get("REDIS_HOST"), port=os.environ.get("REDIS_PORT"))
+    try:
+        yield redis_conn
+    finally:
+        redis_conn.close()
 
-session = HTTP(
-    testnet=False,
-    api_key="...",
-    api_secret="...",
-)
+
+# Dependency to create and manage the pybit session
+def get_bybit_session() -> HTTP:
+    session = HTTP(
+        testnet=False,
+        api_key="...",
+        api_secret="...",
+    )
+    try:
+        yield session
+    finally: 
+        # session has no close method 
+        pass
+    
 
 app = FastAPI()
 
@@ -24,15 +40,15 @@ def read_root():
 
 
 @app.get("/api/test_redis")
-def test_redis():
-    db.set("test", json.dumps({"hoi": "doei"}))
-    output = db.get("test")
+def test_redis(redis_db: redis.Redis = Depends(get_redis_conn)):
+    redis_db.set("test", json.dumps({"hoi": "doei"}))
+    output = redis_db.get("test")
     return output
 
 
 @app.get('/api/orderbook')
-async def orderbook(symbol:str="BTCUSDT"):
-    orderbook = session.get_orderbook(category="linear", symbol=symbol)
+async def orderbook(symbol:str="BTCUSDT", pybit_session = Depends(get_bybit_session)):
+    orderbook = pybit_session.get_orderbook(category="linear", symbol=symbol)
     return orderbook
 
 
