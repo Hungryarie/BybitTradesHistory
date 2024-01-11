@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   redis:
-    image: redis:latest
+    image: redislabs/redistimeseries:1.10.11
     container_name: redis
     restart: unless-stopped
     networks:
@@ -10,17 +10,16 @@ services:
     ports:
       - ${REDIS_PORT}:6379
     volumes:
-     - cache:/data
-      # - ./config/redis.conf:/redis.conf
-    # command: [ "redis-server", "/redis.conf" ]
-    command: redis-server --save 20 1 --loglevel warning
+      - cache:/data
+      - ./config/redis.conf:/etc/redis/redis.conf
+    command:  ["--loadmodule", "/usr/lib/redis/modules/redistimeseries.so", "UNLOAD", "timeseries", "/etc/redis/redis.conf"]
 
   api:
     build: 
       context: ./api
       dockerfile: Dockerfile
     container_name: api
-    restart: unless-stopped
+    restart: always
     depends_on:
       - redis
     networks:

@@ -67,6 +67,12 @@ apply config by: `sudo sysctl -p`
 
 redis should now run without this error!
 
+### Removing redis cache
+1. Stop the running containers: docker-compose down
+2. Remove the existing Redis data volume: docker volume rm <your_project_name>_cache 
+(`docker volume rm bybittradeshistory_cache`)
+3. Start the containers again: docker-compose up
+
 ## References
 ### Redis setup
 using a bit of https://geshan.com.np/blog/2022/01/redis-docker/
