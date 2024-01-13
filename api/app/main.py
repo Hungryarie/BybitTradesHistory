@@ -14,6 +14,7 @@ import numpy as np
 from pybit.unified_trading import HTTP
 import websockets
 from contextlib import asynccontextmanager
+from app.db.utils import get_redis_conn, redis_conn_manager
 from app.logger import streaming_logger
 
 
