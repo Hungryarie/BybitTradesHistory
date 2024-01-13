@@ -31,6 +31,7 @@ services:
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=${REDIS_PORT}
+      - API_LOGGING_LEVEL=${API_PRODUCTION_LEVEL}
     command: uvicorn app.main:app --host 0.0.0.0 --port 80 --reload
 
 volumes:

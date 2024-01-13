@@ -14,43 +14,10 @@ import numpy as np
 from pybit.unified_trading import HTTP
 import websockets
 from contextlib import asynccontextmanager
-import logging
-
-logger = logging.getLogger(__name__)
-hdlr = logging.StreamHandler()
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-hdlr.setFormatter(formatter)
-logger.addHandler(hdlr)
-logger.setLevel(logging.DEBUG)
+from app.logger import streaming_logger
 
 
-async def get_redis_conn() -> redis.Redis:
-    """Dependency for endpoints to create and manage the Redis connection"""
-    redis_conn = redis.Redis(
-        host=os.environ.get("REDIS_HOST"), port=os.environ.get("REDIS_PORT")
-    )
-    try:
-        yield redis_conn
-    except ConnectionError as e:
-        logger.error(f"Unable to connect to Redis: {e}")
-        raise e
-    finally:
-        await redis_conn.aclose()
-
-
-@asynccontextmanager
-async def redis_conn_manager():
-    """Connection manager for inside background tasks"""
-    redis_conn = redis.Redis(
-        host=os.environ.get("REDIS_HOST"), port=os.environ.get("REDIS_PORT")
-    )
-    try:
-        yield redis_conn
-    except ConnectionError as e:
-        logger.error(f"Unable to connect to Redis: {e}")
-        raise e
-    finally:
-        await redis_conn.aclose()
+logger = streaming_logger(__name__, os.getenv("API_LOGGING_LEVEL", "ERROR"))
 
 
 # Dependency to create and manage the pybit session

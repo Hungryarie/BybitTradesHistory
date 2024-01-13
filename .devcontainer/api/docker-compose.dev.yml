@@ -5,5 +5,7 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile.dev
+    environment:
+      - API_LOGGING_LEVEL=${API_DEBUG_LEVEL}
     ports:
       - "5678:5678" # debug port
