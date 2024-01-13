@@ -10,7 +10,6 @@ from fastapi.responses import HTMLResponse
 from fastapi import Depends
 import traceback
 import numpy as np
-
 from pybit.unified_trading import HTTP
 import websockets
 from contextlib import asynccontextmanager
@@ -41,12 +40,24 @@ async def fetch_exchange_ws_stream(stream: str = "publicTrade.BTCUSDT") -> None:
     Args:
         stream:     name of the stream channel to connect. reference in https://bybit-exchange.github.io/docs/v5/ws/connect"""
 
+    stream_name = stream.replace(".", ":")
+
     async with redis_conn_manager() as redis_db:
+        # check if stream is already connected
+        ts_now = datetime.now().timestamp()*1000
+        stream_info = await redis_db.xinfo_stream(stream_name)
+        last_entry = int(stream_info['last-generated-id'].decode().split("-")[0])
+        if abs(ts_now-last_entry) < 5000:   # TODO Hack! need proper checking if websocket connection is made. Could be that there is no trade for 5s => double connection
+            logger.warning("Stream already attached, aborting...")
+            return
+        
         # connect to the bybit ws stream
         uri = "wss://stream.bybit.com/v5/public/linear"
         # uri = "wss://stream-testnet.bybit.com/v5/public/linear"
+
         try:
             async with websockets.connect(uri) as websocket_exchange:
+                logger.info(f"connecting to websocket stream ({uri}) for {stream_name}")
                 # suscribe to a stream/channel
                 payload = {
                     "op": "subscribe",
@@ -60,7 +71,7 @@ async def fetch_exchange_ws_stream(stream: str = "publicTrade.BTCUSDT") -> None:
                 init_msg = await websocket_exchange.recv()
                 logger.debug(init_msg)
 
-                stream_name = stream.replace(".", ":")
+                
                 try:
                     info = await redis_db.xinfo_stream(stream_name)
                     last_id = info["last-entry"][0].decode("utf-8")
