@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 import redis.asyncio as redis
 import os
 import logging
+from app.errors import KeyTypeError
 from app.logger import streaming_logger
 
 
@@ -35,3 +36,43 @@ async def redis_conn_manager():
         raise e
     finally:
         await redis_conn.aclose()
+
+
+async def sort_stream(raw_data: list) -> list:
+    """Sort the stream based on the timestamp and then on its suffix, (not lexicographically).
+
+    Args:
+        raw_data:       raw redis stream output
+    Returns:
+        sorted data on the timestamp-suffix key
+
+    Example:
+        given the raw data:
+        ```
+        [(b'1705072083138-0', {...}), (b'1705072083137-10', {...}),
+        (b'1705072083137-11', {...}), (b'1705072083137-9', {...})]
+        ```
+        The function sorts on the timestamps first and than according
+        to the suffix after the timestamp.
+
+        so the result would be:
+        ```
+        [(b'1705072083137-9', {...}), (b'1705072083137-10', {...}),
+         (b'1705072083137-11', {...}),  (b'1705072083138-0', {...})]
+        ```
+    """
+    split_str = "-"
+    if isinstance(raw_data[0][0], bytes):
+        split_str = b"-"
+    try:
+        result_sorted = sorted(
+            raw_data,
+            key=lambda x: (
+                int(x[0].split(split_str)[0]),
+                int(x[0].split(split_str)[1]),
+            ),
+        )
+    except TypeError:
+        logger.warn("Type of the timestamp representation is not consistent")
+        raise KeyTypeError("Type of the timestamp representation is not consistent")
+    return result_sorted

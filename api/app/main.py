@@ -13,7 +13,7 @@ import numpy as np
 from pybit.unified_trading import HTTP
 import websockets
 from contextlib import asynccontextmanager
-from app.db.utils import get_redis_conn, redis_conn_manager
+from app.db.utils import get_redis_conn, redis_conn_manager, sort_stream
 from app.logger import streaming_logger
 
 
@@ -171,9 +171,7 @@ async def test_redis_last(
         stream_name, max=end_timestamp, min=start_timestamp, count=limit
     )
     # sort with regard to the timestamp AND the suffix
-    result_sorted = sorted(
-        result_raw, key=lambda x: (int(x[0].split(b"-")[0]), int(x[0].split(b"-")[1]))
-    )
+    result_sorted = await sort_stream(result_raw)
     np_array = np.array(result_sorted)
     np_result = np_array[:, 1]  # Extract the second element onwards from each row
     list_of_dicts = [dict(entry) for entry in np_result]
