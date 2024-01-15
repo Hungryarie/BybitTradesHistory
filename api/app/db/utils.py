@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 import redis.asyncio as redis
+from redis import ResponseError
 import os
 import logging
 from app.errors import KeyTypeError
@@ -76,3 +77,17 @@ async def sort_stream(raw_data: list) -> list:
         logger.warn("Type of the timestamp representation is not consistent")
         raise KeyTypeError("Type of the timestamp representation is not consistent")
     return result_sorted
+
+async def check_stream_exsists(stream_name: str) -> bool: 
+    """check if the redis steam exists"""
+    try:
+        async with redis_conn_manager() as redis_db:
+            info = await redis_db.xinfo_stream(stream_name)
+            # last_id = info["last-entry"][0].decode("utf-8")
+            logger.debug(f"stream info: {stream_name}: {info}")
+            logger.info(f"stream {stream_name} exists, return True")
+
+            return True
+    except ResponseError as e:
+        logger.warn(f"stream {stream_name} does not exists, return False")
+        return False

@@ -15,6 +15,7 @@ from contextlib import asynccontextmanager
 from app.backgroundtasks.exchange_trades import fetch_exchange_ws_stream
 from app.db.utils import get_redis_conn, sort_stream
 from app.logger import streaming_logger
+from app.routers import ws
 
 
 logger = streaming_logger(__name__, os.getenv("API_LOGGING_LEVEL", "ERROR"))
@@ -47,6 +48,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.include_router(ws.router)
 
 
 @app.get("/start_trades")
@@ -182,7 +184,7 @@ html = """
         <ul id='messages'>
         </ul>
         <script>
-            var ws = new WebSocket('ws://{}/ws_trades');
+            var ws = new WebSocket('ws://{}/trades');
             ws.onmessage = function(event) {{
                 var messages = document.getElementById('messages')
                 var message = document.createElement('li')
@@ -191,6 +193,12 @@ html = """
                 messages.appendChild(message)
                 console.log(message)
             }};
+            function sendMessage(event) {{
+                var input = document.getElementById("messageText")
+                ws.send(input.value)
+                input.value = ''
+                event.preventDefault()
+            }}
         </script>
     </body>
 </html>
@@ -199,5 +207,6 @@ html = """
 
 @app.get("/ws_test")
 async def ws_test(request: Request):
+    """endpoint for debugging/testing the websocket stream, makes a websocket connection to ws://localhost:port/trades"""
     con_info = get_connectioninfo(request)
     return HTMLResponse(html.format(con_info["server_adress"]))
