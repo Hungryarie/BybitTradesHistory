@@ -56,13 +56,13 @@ async def fetch_exchange_ws_stream(stream: str = "publicTrade.BTCUSDT") -> None:
                     last_id = "0-0"
 
                 # once connected to the exchanges trade stream, fetch the messages and do something with it
-                ping_prev = datetime.now().timestamp()
+                # ping_prev = datetime.now().timestamp()
                 while True:
                     # send a ping one every minute or so (https://websockets.readthedocs.io/en/stable/reference/asyncio/client.html#websockets.client.WebSocketClientProtocol.ping)
-                    ts_now = datetime.now().timestamp()
-                    if ts_now - ping_prev >= 60:
-                        await websocket_exchange.ping()
-                        ping_prev = ts_now
+                    # ts_now = datetime.now().timestamp()
+                    # if ts_now - ping_prev >= 20:  # bybit docs state a recommended ping interval of 20 secs (https://bybit-exchange.github.io/docs/v5/ws/connect#how-to-send-the-heartbeat-packet)
+                    #     await websocket_exchange.ping()  
+                    #     ping_prev = ts_now
                     msg_q = websocket_exchange.messages
                     msg = await websocket_exchange.recv()
                     obj = json.loads(msg)
