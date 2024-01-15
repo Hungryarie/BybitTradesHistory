@@ -88,8 +88,10 @@ async def fetch_exchange_ws_stream(stream: str = "publicTrade.BTCUSDT") -> None:
                         last_id = new_id
 
         except websockets.exceptions.ConnectionClosedOK as e:
-            logger.info(f"connection closed! {e}")
+            logger.info(f"connection closed OK! {e}")
+        except websockets.ConnectionClosedError as e:
+            logger.error(f"connection closed due to an error! {e}")
         except Exception as e:
             logger.error(e)
-            logger.error(e.with_traceback())
+            # logger.error(e.with_traceback())
             # traceback.print_exc()
