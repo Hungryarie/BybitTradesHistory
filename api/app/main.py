@@ -181,6 +181,10 @@ html = """
     </head>
     <body>
         <h1>WebSocket live trades</h1>
+        <form action="" onsubmit="sendMessage(event)">
+            <input type="text" id="messageText" autocomplete="off"/>
+            <button>Send</button>
+        </form>
         <ul id='messages'>
         </ul>
         <script>
