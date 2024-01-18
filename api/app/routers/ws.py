@@ -1,22 +1,15 @@
-from datetime import datetime
-import json
 import os
-from fastapi import APIRouter, WebSocketDisconnect, WebSocket
-from websockets import ConnectionClosedOK
-from websockets.exceptions import ConnectionClosed
-
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi.websockets import WebSocketState
 from app.db.consumer.trades import trades_consumer
-from app.errors import (
-    SubscriptionError,
-)
 from app.logger import streaming_logger
-from app.utils import check_subscription
-
+from app.websocket.models import TradesStreamModel
+from app.websocket.subscribe import check_subscription_call
 
 router = APIRouter(prefix="")
 logger = streaming_logger(__name__, os.getenv("API_LOGGING_LEVEL", "ERROR"))
 
-
+  
 @router.websocket("/trades")
 async def websocket_trades(websocket: WebSocket):
     """provides a websocket endpoint for realtime trades from the exchanges 
@@ -26,46 +19,26 @@ async def websocket_trades(websocket: WebSocket):
     # accept the websocket request from the user
     await websocket.accept()
     try:
-        await websocket.send_text("connection established!")
-        # wait for the subscription
-        while True:
-            received = await websocket.receive()
-            try:
-                valid, msg = await check_subscription(received["text"])
-                if valid:
-                    # stream:str = "publicTrade:ETHUSDT"
-                    # start_timestamp:int = 1705248815000
-                    # start_timestamp = 1705214500000
-                    subscripton: dict = json.loads(received["text"])
-                    stream = subscripton["stream"]
-                    start_timestamp = subscripton.get(
-                        "timestamp", int(datetime.now().timestamp() * 1000)
-                    )
-                    await websocket.send_text(
-                        f"subscribed to {stream} with timestamp {start_timestamp}"
-                    )
-                    if msg:
-                        await websocket.send_text(f"ignoring: {msg}")
-                    break
-            except SubscriptionError as e:
-                await websocket.send_text(f"subscribtion error: {e}")
-            except Exception as e:
-                logger.error(f"unknown error, closing websocket connection: {e}")
-                await websocket.send_text(
-                    f"unknown error, closing websocket connection: {e}"
-                )
-                await websocket.close()
-                return
-
+        subscription = await check_subscription_call(websocket, TradesStreamModel)
         # subscribe to the redis stream
-        async for trade in trades_consumer(stream, start_timestamp):
+        async for trade in trades_consumer(subscription["stream"], subscription["timestamp"]):
             await websocket.send_text(f"Message data was: {trade}")
 
-            # # break for test
-            # if i>10:
-            #     await websocket.close()
-            #     return
-            # i+=1
-    except (WebSocketDisconnect, ConnectionClosed, ConnectionClosedOK) as e:
+    except (WebSocketDisconnect) as e: #, ConnectionClosed, ConnectionClosedOK) as e:
         logger.info(f"connection closed: {e}")
         # await websocket.close()  NOT needed because we are already disconnected
+    finally:
+        logger.debug(f"App state:{websocket.application_state}, client state: {websocket.client_state}")
+        if websocket.client_state == WebSocketState.CONNECTED and websocket.application_state == WebSocketState.CONNECTED:
+            try: 
+                await websocket.send_text(f"goodbye... connecion will be terminated{0}")
+                await websocket.close()
+                logger.info("finished, connection is closed")
+            except Exception as e:
+                logger.info(f"could not disconnect, client already disconnected, error: {e}")
+        elif websocket.client_state == WebSocketState.DISCONNECTED:
+            logger.info("finished, client is already disconnected")
+        else:
+            logger.info("finished, connection is closed")
+        pass  # TODO CHECK with debugging! is connection closed or should i close it here?
+        
