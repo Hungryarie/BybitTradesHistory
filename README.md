@@ -78,6 +78,8 @@ redis should now run without this error!
 using a bit of https://geshan.com.np/blog/2022/01/redis-docker/
 ### Depends on, links, networks
 - https://www.baeldung.com/ops/docker-compose-links-depends-on
+### Websocket error codes list
+https://github.com/Luka967/websocket-close-codes
 
 
 ### TODO 
