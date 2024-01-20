@@ -13,7 +13,7 @@ def make_data_package(type: str, content: str) -> dict:
     else:
         return {"type":"data", "data":content}
 
-# @asynccontextmanager
+
 async def trades_consumer(stream: str, start_timestamp: int) -> dict:
     err = None
     try:
@@ -47,11 +47,10 @@ async def trades_consumer(stream: str, start_timestamp: int) -> dict:
                 if stream_msgs[1]:
                     last_key = message[0].decode()
     except Exception as e:
-        logger.error(f"unknow error... {e}")
+        logger.error(f"unknow error in `trades_consumer`: {e}")
         err = e
     finally:
-        yield make_data_package("info", f"closed the fetch from redis, due to unexpected error: {err}")
-
-        
-
-
+        if err:
+            logger.error(f"closing the trades_consumer, due to error: {err}")
+        else:
+            logger.info("closing the trades_consumer")

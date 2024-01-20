@@ -27,12 +27,9 @@ async def websocket_trades(websocket: WebSocket):
 
         # subscribe to the redis stream
         async for trade in trades_consumer(subscription["stream"], subscription["timestamp"]):
-            # TODO handle Task exception was never retrieved
-            # api  | future: <Task finished name='Task-17' coro=<<async_generator_athrow without __name__>()> exception=RuntimeError('async generator ignored GeneratorExit')>
-            # api  | RuntimeError: async generator ignored GeneratorExit
-            await websocket.send_text(f"Message data was: {trade}")
-
-    except (WebSocketDisconnect, ConnectionClosedOK) as e:
+            
+            
+    except (WebSocketDisconnect, ConnectionClosedOK, ConnectionClosedError) as e:
         logger.info(f"connection closed: {e}")
         websocket.client_state = WebSocketState.DISCONNECTED
     finally:
