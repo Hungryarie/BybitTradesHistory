@@ -10,7 +10,7 @@ def make_data_package(type: str, content: str|dict) -> dict:
     assert type in ['info', 'data'], "only types 'info' and 'data' are allowed"
     try:
         content = {k.decode(): v.decode() for k, v in content.items()}
-    except AttributeError as e:
+    except AttributeError:
         pass
     if type=="info":
         return {"type":"info", "msg":content}
