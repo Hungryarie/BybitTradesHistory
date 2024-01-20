@@ -89,5 +89,5 @@ async def check_stream_exsists(stream_name: str) -> bool:
 
             return True
     except ResponseError as e:
-        logger.warn(f"stream {stream_name} does not exists, return False")
+        logger.warn(f"stream {stream_name} does not exists, return False. {e}")
         return False
