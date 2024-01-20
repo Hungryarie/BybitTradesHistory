@@ -1,4 +1,3 @@
-# from contextlib import asynccontextmanager
 from app.db.utils import redis_conn_manager
 from app.logger import streaming_logger
 import os
@@ -6,8 +5,13 @@ import os
 
 logger = streaming_logger(__name__, os.getenv("API_LOGGING_LEVEL", "ERROR"))
 
-def make_data_package(type: str, content: str) -> dict:
+
+def make_data_package(type: str, content: str|dict) -> dict:
     assert type in ['info', 'data'], "only types 'info' and 'data' are allowed"
+    try:
+        content = {k.decode(): v.decode() for k, v in content.items()}
+    except AttributeError as e:
+        pass
     if type=="info":
         return {"type":"info", "msg":content}
     else:

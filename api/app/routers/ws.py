@@ -1,3 +1,4 @@
+import json
 import os
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.websockets import WebSocketState
@@ -26,13 +27,18 @@ async def websocket_trades(websocket: WebSocket):
         subscription = await check_subscription_call(websocket, TradesStreamModel)
 
         # subscribe to the redis stream
-        async for trade in trades_consumer(subscription["stream"], subscription["timestamp"]):
-            
-            
+        async for trade in trades_consumer(subscription["stream"], subscription["timestamp"]):            
+            await websocket.send_text(json.dumps(trade))
+
     except (WebSocketDisconnect, ConnectionClosedOK, ConnectionClosedError) as e:
         logger.info(f"connection closed: {e}")
         websocket.client_state = WebSocketState.DISCONNECTED
     finally:
+        await handle_websocket_closing(websocket)
+    
+
+async def handle_websocket_closing(websocket: WebSocket):
+        """handles the closing of the websocket connection"""
         logger.debug(f"App state:{websocket.application_state}, client state: {websocket.client_state}")
         if websocket.client_state == WebSocketState.CONNECTED and websocket.application_state == WebSocketState.CONNECTED:
             try:
